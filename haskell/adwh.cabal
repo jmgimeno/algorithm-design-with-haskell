@@ -25,6 +25,7 @@ source-repository head
 
 library
   exposed-modules:
+      Chapter1
       Lib
   other-modules:
       Paths_adwh
