@@ -48,3 +48,27 @@ perms2' xs = concatMap subperms (picks xs)
     foldr f e . concat = foldr (flip (foldr f)) e
 
 -}
+
+{-
+    foldr f e . concat = ???
+
+    - concat = foldr (++) []
+    - applying master fusion rule for foldr
+
+        h(foldr (++) [] xss) = foldr g (h []) xss
+            where f = (++), e = []
+        provided that
+            h(xs ++ ys) = g xs (h ys)
+        but h = foldr f e
+            foldr f e (hs ++ ys)
+                = foldr f (foldr f e ys) xs
+                = foldr f (h ys) xs
+                = g xs (h ys)
+                => g = flip (foldr f)
+-}
+
+fun :: (a -> b -> b) -> b -> [[a]] -> b
+fun f e = foldr f e . concat
+
+fun' :: (a -> b -> b) -> b -> [[a]] -> b
+fun' f e = foldr (flip (foldr f)) e
