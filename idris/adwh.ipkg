@@ -1,0 +1,6 @@
+package adwh
+version = 0.1
+
+depends = base, contrib
+
+modules = Chapter1
