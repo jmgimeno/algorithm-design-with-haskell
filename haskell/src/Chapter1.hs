@@ -1,6 +1,8 @@
 module Chapter1 
     ( ex1_6
     , ex1_6'
+    , takeWhile'
+    , dropWhileEnd'
     )where
 
 head' :: [a] -> a
@@ -139,3 +141,52 @@ ex1_6 p f e = foldr f e . filter p
 
 ex1_6' :: (a -> Bool) -> (a -> b -> b) -> b -> [a] -> b
 ex1_6' p f = foldr (\x hy -> if p x then f x hy else hy)
+
+-- Exercise 1.7
+
+takeWhile' :: (a -> Bool) -> [a] -> [a]
+takeWhile' p = foldr op [] where op x xs = if p x then x : xs else []
+
+-- Exercise 1.8
+
+{-
+  dropWhileEnd = reverse . dropWhile p . reverse
+
+  reverse = foldr (\x y -> y ++ [x]) []
+
+  - First fusion:
+
+    h = dropWhile p
+    f x y = \x y -> y ++ [x]
+
+    dropWhile p (y ++ [x]) = g x (h y)
+
+    g x hy = if (null hy) then dropWhile p [x] else hy ++ [x]
+
+    step x []
+        | p x = []
+        | otherwise = [x]
+    step x y = y ++ [x]
+
+  - Second fusion:
+
+    h = reverse
+    f x y = step x y
+
+    h (f x y) = g x hy where hy = reverse y
+
+    step x []                   ----> y = [] <-> hy = []
+        | p x = []              ----> []
+        | otherwhise = [x]      ----> [x]
+    step x y = y ++ [x]         ----> reverse (y ++ [x]) =
+                                      [x] ++ reverse y =
+                                      [x] ++ hy = x : hy
+-}
+
+dropWhileEnd' :: (a -> Bool) -> [a] -> [a]
+dropWhileEnd' p = foldr op []
+                    where op x []
+                            | p x = []
+                            | otherwise = [x]
+                          op x xs = x : xs
+
