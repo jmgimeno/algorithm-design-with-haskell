@@ -3,7 +3,9 @@ module Chapter1
     , ex1_6'
     , takeWhile'
     , dropWhileEnd'
-    )where
+    ) where
+
+import Data.List (inits, tails)
 
 head' :: [a] -> a
 head' = foldr const (error "head of empty")
@@ -189,4 +191,44 @@ dropWhileEnd' p = foldr op []
                             | p x = []
                             | otherwise = [x]
                           op x xs = x : xs
+
+-- Exercise 1.11
+
+integer :: [Int] -> Int
+integer = foldl (\x y -> x * 10 + y) 0
+
+fraction :: [Int] -> Double
+fraction = foldr (\x y -> (fromIntegral x + y) / 10) 0
+
+-- Exercise 1.12
+
+inits' :: [a] -> [[a]]
+inits' = foldr (\x y -> [] : map (x:) y) [[]]
+
+tails' :: [a] -> [[a]]
+tails' = foldr (\x y -> [x : head y] ++ y) [[]]
+
+-- map (foldl f e) . inits = ??? = scanl f e 
+-- map (foldr f e) . tails = ??? = scanr f e
+
+-- NOTE: I suppose I need an inductive proof of that
+
+-- Exercise 1.13
+
+apply :: Int -> (a -> a) -> a -> a
+apply 0 _ z = z
+apply n f z = apply (n-1) f (f z)
+
+-- Exercise 1.14
+
+{-
+inserts :: a -> [a] -> [[a]]
+inserts x [] = [[x]]
+inserts x (y : ys) = (x : y : ys) : map (y:) (inserts x ys)
+-}
+
+inserts' :: a -> [a] -> [[a]]
+inserts' x xs = foldr op [[x]] xs
+                    where 
+                        op y yss = (x : y : tail (head yss)) : map (y:) yss
 
