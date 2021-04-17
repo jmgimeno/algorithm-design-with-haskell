@@ -51,6 +51,20 @@ cong3 : (0 g : t1 -> t2 -> t3 -> u)
           -> g a c e = g b d f
 cong3 g Refl Refl Refl = Refl
 
+lemma_ex_1_10 : (xs : List a)
+                -> (y : a)
+                -> (op : a -> a -> a)
+                -> (e : a)
+                -> (unitL: (x : a) -> op e x = x)
+                -> (unitR: (x : a) -> op x e = x)
+                -> (assoc: (x, y, z : a) -> op (op x y) z = op x (op y z))
+                -> foldl op y xs = op y (foldr op e xs)
+lemma_ex_1_10 [] y op e unitL unitR assoc 
+  = sym $ unitR _
+lemma_ex_1_10 (x :: xs) y op e unitL unitR assoc 
+  = rewrite lemma_ex_1_10 xs (op y x) op e unitL unitR assoc in 
+    assoc _ _ _
+
 ex1_10 : (xs : List a)
                 -> (op : a -> a -> a)
                 -> (e : a)
@@ -58,11 +72,8 @@ ex1_10 : (xs : List a)
                 -> (unitR: (x : a) -> op x e = x)
                 -> (assoc: (x, y, z : a) -> op (op x y) z = op x (op y z))
                 -> foldl op e xs = foldr op e xs
-ex1_10 [] op e unitL unitR assoc = Refl
-ex1_10 (x :: xs) op e unitL unitR assoc = Calc $
-           |~ foldl op e (x :: xs)
-           ~~ foldl op (op e x) xs               ...(Refl)        
-           ~~ foldl op x xs                      ...(cong (\x => foldl op x xs) (unitL _))
-           ~~ foldr (flip op) x (rev xs)         ...(lemma _ _ _)
-           ~~ foldr op e (x :: xs)               ...(?step1)
+ex1_10 xs op e unitL unitR assoc 
+  = rewrite lemma_ex_1_10 xs e op e unitL unitR assoc in
+    unitL _    
+
 
