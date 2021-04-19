@@ -232,3 +232,36 @@ inserts' x xs = foldr op [[x]] xs
                     where 
                         op y yss = (x : y : tail (head yss)) : map (y:) yss
 
+-- Exercise 1.15
+
+perms3 :: Eq a => [a] -> [[a]]
+perms3 [] = [[]]
+perms3 xs = [x:ys | x <- xs, ys <- perms3 (remove x xs)]
+
+remove :: Eq a => a -> [a] -> [a]
+remove _ [] = []
+remove y (x : xs)
+    | y == x = xs
+    | otherwise = y : remove y xs
+
+-- Exercise 1.20
+
+concat' :: [[a]] -> [a]
+concat' xss = foldl op id xss [] 
+                where op k xs =  k . (xs ++)
+                -- op :: ([a] -> [a]) -> [a] -> ([a] -> [a])
+
+-- Exercise 1.21
+
+steep :: (Num a, Ord a) => [a] -> Bool
+steep [] = True 
+steep (x : xs) = x > sum xs && steep xs
+
+faststeep :: (Num a, Ord a) => [a] -> (Bool, a)
+faststeep [] = (True, 0)
+faststeep (x : xs) = let (b, s) = faststeep xs
+                    in (x < s && b, x + s)
+
+steep' :: (Num a, Ord a) => [a] -> Bool
+steep' = fst . faststeep
+
