@@ -26,6 +26,7 @@ source-repository head
 library
   exposed-modules:
       Chapter1
+      Chapter3
       Lib
   other-modules:
       Paths_adwh
@@ -51,6 +52,8 @@ test-suite adwh-test
   type: exitcode-stdio-1.0
   main-is: Spec.hs
   other-modules:
+      Chapter1Test
+      Chapter3Test
       Paths_adwh
   hs-source-dirs:
       test

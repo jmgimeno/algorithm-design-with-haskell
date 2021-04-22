@@ -3,6 +3,7 @@ module Chapter1
     , ex1_6'
     , takeWhile'
     , dropWhileEnd'
+    , single
     ) where
 
 import Data.List (inits, tails)
