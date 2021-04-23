@@ -4,7 +4,7 @@ import Chapter3
 import Test.QuickCheck
 import Test.QuickCheck.Function
 
-import Data.List (dropWhile)
+import Data.List (dropWhile, inits)
 
 normalize :: [a] -> [a] -> ([a], [a])
 normalize [] (y : ys) = ([y], ys)
@@ -46,6 +46,11 @@ prop_dropWhileSL :: Eq a => Fun a Bool -> [a] -> [a] -> Bool
 prop_dropWhileSL (Fn p) xs ys = dropWhile p (fromSL sl) == fromSL (dropWhileSL p sl)
                                 where sl = normalize xs ys
 
+-- inits . fromSL = map fromSL . fromSL . initsSL 
+prop_initsSL :: Eq a => [a] -> [a] -> Bool
+prop_initsSL xs ys = inits (fromSL sl) == map fromSL (fromSL (initsSL sl))
+                     where sl = normalize xs ys
+
 chapter3Tests :: IO ()
 chapter3Tests = do
     quickCheck (prop_eq1 :: Int -> [Int] -> [Int] -> Bool)
@@ -55,3 +60,4 @@ chapter3Tests = do
     quickCheck (prop_eq5 :: [Int] -> [Int] -> Bool)
     quickCheck (prop_eq6 :: [Int] -> [Int] -> Bool)
     quickCheck (prop_dropWhileSL :: Fun Int Bool -> [Int] -> [Int] -> Bool)
+    quickCheck (prop_initsSL :: [Int] -> [Int] -> Bool)

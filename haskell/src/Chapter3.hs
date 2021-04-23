@@ -10,6 +10,7 @@ module Chapter3
     , headSL
     , lastSL
     , dropWhileSL
+    , initsSL
     ) where
 
 import Chapter1 (single)
@@ -82,3 +83,22 @@ dropWhileSL p (xs, ys)
           ys'  = dropWhile p (reverse ys)
           (xs'', ys'') = if null ys' then nilSL else ([head ys'], reverse (tail ys'))
 
+-- Exercise 3.6
+
+-- inits . fromSL = map fromSL . fromSL . initsSL 
+
+{-}
+inits' :: [a] -> [[a]]
+inits' = foldr (\x y -> [] : map (x:) y) [[]]
+
+foldr :: (b -> a -> b) -> b -> [a] -> [b]
+foldr f z [] = z
+foldr f (x : xs) = f x (foldr f z xs)
+-}
+
+initsSL :: SymList a -> SymList (SymList a)
+initsSL sl = if nullSL sl
+             then consSL nilSL nilSL
+             else op (headSL sl) (initsSL (tailSL sl))
+                where op sl slsl = consSL nilSL (mapSL (consSL sl) slsl)
+                      mapSL f (xs, ys) = (map f xs, map f ys)
