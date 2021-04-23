@@ -53,6 +53,9 @@ nullSL (xs, ys) = null xs && null ys
 singleSL :: SymList s -> Bool
 singleSL (xs, ys) = single xs && null ys || null xs && single ys
 
+lengthSL :: SymList a -> Int
+lengthSL (xs, ys) = length xs + length ys
+
 -- Exercise 3.3
 
 consSL :: a -> SymList a -> SymList a
@@ -83,6 +86,13 @@ dropWhileSL p (xs, ys)
           ys'  = dropWhile p (reverse ys)
           (xs'', ys'') = if null ys' then nilSL else ([head ys'], reverse (tail ys'))
 
+-- Solution:
+dropWhileSL' :: (a -> Bool) -> SymList a -> SymList a
+dropWhileSL' p sl
+    | nullSL sl     = nilSL
+    | p (headSL sl) = dropWhileSL' p (tailSL sl)
+    | otherwise     = sl 
+
 -- Exercise 3.6
 
 -- inits . fromSL = map fromSL . fromSL . initsSL 
@@ -102,3 +112,14 @@ initsSL sl = if nullSL sl
              else op (headSL sl) (initsSL (tailSL sl))
                 where op sl slsl = consSL nilSL (mapSL (consSL sl) slsl)
                       mapSL f (xs, ys) = (map f xs, map f ys)
+
+-- Solution:
+initsSL' :: SymList a -> SymList (SymList a)
+initsSL' sl = if nullSL sl
+              then snocSL sl nilSL
+              else snocSL sl (initsSL (initSL sl))
+
+-- Exercise 3.7
+
+inits' :: [a] -> [[a]]
+inits' = map reverse . scanl (flip (:)) []
