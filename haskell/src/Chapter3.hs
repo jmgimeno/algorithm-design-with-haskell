@@ -1,5 +1,14 @@
 module Chapter3 
-    ( fromSL
+    ( cons
+    , snoc
+    , fromSL
+    , consSL
+    , snocSL
+    , tailSL
+    , nullSL
+    , initSL
+    , headSL
+    , lastSL
     , dropWhileSL
     ) where
 
@@ -9,6 +18,12 @@ import Data.List (drop)
 type SymList a = ([a], [a])
 -- null xs => null xs or single xs
 -- null ys => null xs or single ys
+
+cons :: a -> [a] -> [a]
+cons x xs = x : xs
+
+snoc :: a -> [a] -> [a]
+snoc x xs = xs ++ [x]
 
 fromSL :: SymList a -> [a]
 fromSL (xs, ys) = xs ++ reverse ys
