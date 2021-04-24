@@ -16,6 +16,8 @@ module Chapter3
 import Chapter1 (single)
 import Data.List (drop)
 
+-- SYMMETRIC LISTS
+
 type SymList a = ([a], [a])
 -- null xs => null xs or single xs
 -- null ys => null xs or single ys
@@ -123,3 +125,60 @@ initsSL' sl = if nullSL sl
 
 inits' :: [a] -> [[a]]
 inits' = map reverse . scanl (flip (:)) []
+
+-- RANDOM-ACCESS LISTS
+
+fetch :: Int -> [a] -> a
+fetch k xs = if k == 0 then head xs else fetch (k - 1) xs
+
+data Tree a = Leaf a | Node Int (Tree a) (Tree a)
+
+size :: Tree a -> Int
+size (Leaf _)     = 1
+size (Node n _ _) = n
+
+node :: Tree a -> Tree a -> Tree a
+node t1 t2 = Node (size t1 + size t2) t1 t2
+
+data Digit a = Zero | One (Tree a)
+type RAList a = [Digit a]
+
+fromRA :: RAList a -> [a]
+fromRA = concatMap from
+         where from Zero = []
+               from (One t) = fromT t
+
+fromT :: Tree a -> [a]
+fromT (Leaf x)       = [x]
+fromT (Node _ t1 t2) = fromT t1 ++ fromT t2
+
+-- fetch k . fromRA = fetchRA
+
+fetchRA :: Int -> RAList a -> a
+fetchRA k (Zero : xs)  = fetchRA k xs
+fetchRA k (One t : xs) = if k < size t 
+                         then fetchT k t 
+                         else fetchRA (k - size t) xs
+
+fetchT :: Int -> Tree a -> a
+fetchT 0 (Leaf x) = x
+fetchT k (Node n t1 t2) = if k < m 
+                          then fetchT k t1 
+                          else fetchT (k - m) t2
+                          where m = n `div` 2
+
+consRA :: a -> RAList a -> RAList a
+consRA x xs = consT (Leaf x) xs
+
+consT :: Tree a -> RAList a -> RAList a
+consT t1 []            = [One t1]
+consT t1 (Zero : xs)   = One t1 : xs
+consT t1 (One t2 : xs) = Zero : consT (node t1 t2) xs
+
+unconsRA :: RAList a -> (a, RAList a)
+unconsRA xs = (x, ys) where (Leaf x, ys) = unconsT xs
+
+unconsT :: RAList a -> (Tree a, RAList a)
+unconsT (One t : xs) = if null xs then (t, []) else (t, Zero : xs)
+unconsT (Zero : xs)  = (t1, One t2 : ys) where (Node _ t1 t2, ys) = unconsT xs
+
