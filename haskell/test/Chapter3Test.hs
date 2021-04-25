@@ -6,6 +6,8 @@ import Test.QuickCheck.Function
 
 import Data.List (dropWhile, inits)
 
+-- SYMMETRIC LISTS
+
 normalize :: [a] -> [a] -> ([a], [a])
 normalize [] (y : ys) = ([y], ys)
 normalize (x : xs) [] = (xs, [x])
@@ -51,6 +53,16 @@ prop_initsSL :: Eq a => [a] -> [a] -> Bool
 prop_initsSL xs ys = inits (fromSL sl) == map fromSL (fromSL (initsSL sl))
                      where sl = normalize xs ys
 
+-- RANDOM-ACCESS LISTS
+
+fromList :: [a] -> RAList a
+fromList = foldr consRA [] 
+
+-- fetch k . fromRA = fetchRA k
+prop_fetchRA :: Eq a => Int -> [a] -> Bool 
+prop_fetchRA k xs = k < 0 || k >= length xs || fetch k (fromRA ra) == fetchRA k ra
+                    where ra = fromList xs
+
 chapter3Tests :: IO ()
 chapter3Tests = do
     quickCheck (prop_eq1 :: Int -> [Int] -> [Int] -> Bool)
@@ -61,3 +73,4 @@ chapter3Tests = do
     quickCheck (prop_eq6 :: [Int] -> [Int] -> Bool)
     quickCheck (prop_dropWhileSL :: Fun Int Bool -> [Int] -> [Int] -> Bool)
     quickCheck (prop_initsSL :: [Int] -> [Int] -> Bool)
+    quickCheck (prop_fetchRA :: Int -> [Int] -> Bool)

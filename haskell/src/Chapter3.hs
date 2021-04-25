@@ -11,6 +11,13 @@ module Chapter3
     , lastSL
     , dropWhileSL
     , initsSL
+    , fetch
+    , RAList
+    , Tree(..)
+    , Digit(..)
+    , fromRA
+    , fetchRA
+    , consRA
     ) where
 
 import Chapter1 (single)
@@ -129,9 +136,9 @@ inits' = map reverse . scanl (flip (:)) []
 -- RANDOM-ACCESS LISTS
 
 fetch :: Int -> [a] -> a
-fetch k xs = if k == 0 then head xs else fetch (k - 1) xs
+fetch k xs = if k == 0 then head xs else fetch (k - 1) (tail xs)
 
-data Tree a = Leaf a | Node Int (Tree a) (Tree a)
+data Tree a = Leaf a | Node Int (Tree a) (Tree a) deriving Show
 
 size :: Tree a -> Int
 size (Leaf _)     = 1
@@ -140,7 +147,7 @@ size (Node n _ _) = n
 node :: Tree a -> Tree a -> Tree a
 node t1 t2 = Node (size t1 + size t2) t1 t2
 
-data Digit a = Zero | One (Tree a)
+data Digit a = Zero | One (Tree a) deriving Show
 type RAList a = [Digit a]
 
 fromRA :: RAList a -> [a]
@@ -151,8 +158,6 @@ fromRA = concatMap from
 fromT :: Tree a -> [a]
 fromT (Leaf x)       = [x]
 fromT (Node _ t1 t2) = fromT t1 ++ fromT t2
-
--- fetch k . fromRA = fetchRA
 
 fetchRA :: Int -> RAList a -> a
 fetchRA k (Zero : xs)  = fetchRA k xs
