@@ -187,3 +187,56 @@ unconsT :: RAList a -> (Tree a, RAList a)
 unconsT (One t : xs) = if null xs then (t, []) else (t, Zero : xs)
 unconsT (Zero : xs)  = (t1, One t2 : ys) where (Node _ t1 t2, ys) = unconsT xs
 
+-- Exercise 3.8
+
+{-
+    T(p) = 2 T (p-1) + 2^(p-1)
+         = 2 [2 T (p-2) + 2^(p-2)] + 2^(p-1)
+         = 2^k T(p-k) + k 2^(p-1)
+
+    k = p - 1
+
+    T(p) = 2^(p-1) + (p - 1) 2^(p-1) = p 2^(p-1) = Theta(p 2^p)
+-}
+
+fromT' :: Tree a -> [a]
+fromT' t = fromTs [t]
+
+fromTs :: [Tree a] -> [a]
+fromTs [] = []
+fromTs (Leaf x : ts) = x : fromTs ts
+fromTs (Node _ t1 t2 : ts) = fromTs $ t1 : t2 : ts
+
+-- Exercise 3.10
+
+toRA :: [a] -> RAList a
+toRA = foldr consRA []
+
+-- >>> toRA [1,2,3,4,5]
+-- [One (Leaf 1),Zero,One (Node 4 (Node 2 (Leaf 2) (Leaf 3)) (Node 2 (Leaf 4) (Leaf 5)))]
+
+-- Exercise 3.11
+
+updateRA :: Int -> a -> RAList a -> RAList a
+updateRA k x (Zero : ts) = updateRA k x ts
+updateRA k x (One t : ts) = if k < size t
+                            then One (updateT k x t) : ts
+                            else One t : updateRA (k - size t) x ts
+
+updateT :: Int -> a -> Tree a -> Tree a
+updateT 0 x (Leaf _) = Leaf x
+updateT k x (Node s t1 t2) = if k < size t1
+                             then Node s (updateT k x t1) t2
+                             else Node s t1 (updateT (k - size t1) x t2)
+
+-- >>> updateRA 1 (-1) (toRA [1,2,3,4,5])
+-- [One (Leaf 1),One (Node 4 (Node 2 (Leaf (-1)) (Leaf 3)) (Node 2 (Leaf 4) (Leaf 5)))]
+
+-- Exercise 3.12
+
+(//) :: RAList a -> [(Int, a)] -> RAList a
+(//) = foldl (flip (uncurry updateRA))
+
+-- >>> (toRA [1,2,3,4,5]) // [(1,(-1)), (2,(-2)), (1,(-3))]
+-- [One (Leaf 1),One (Node 4 (Node 2 (Leaf (-3)) (Leaf (-2))) (Node 2 (Leaf 4) (Leaf 5)))]
+
