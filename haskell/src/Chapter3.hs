@@ -21,7 +21,7 @@ module Chapter3
     ) where
 
 import Chapter1 (single)
-import Data.List (drop)
+import Data.List (drop, uncons)
 
 -- SYMMETRIC LISTS
 
@@ -239,4 +239,12 @@ updateT k x (Node s t1 t2) = if k < size t1
 
 -- >>> (toRA [1,2,3,4,5]) // [(1,(-1)), (2,(-2)), (1,(-3))]
 -- [One (Leaf 1),One (Node 4 (Node 2 (Leaf (-3)) (Leaf (-2))) (Node 2 (Leaf 4) (Leaf 5)))]
+
+-- Exercise 3.13
+
+headRA :: RAList a -> a
+headRA = fst . unconsRA
+
+tailRA :: RAList a -> RAList a
+tailRA = snd . unconsRA
 
