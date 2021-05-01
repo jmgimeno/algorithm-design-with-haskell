@@ -273,16 +273,18 @@ fa' :: Int -> Array Int Int
 fa' n = foldl update (array (0,n) [(0,1)]) [1..n]
         where update ax i = ax Data.Array.// [(i,i * ax!(i-1))] 
 
+-- But this is inefficient !!
+
 -- >>> fa' 5
 -- array (0,5) [(0,1),(1,1),(2,2),(3,6),(4,24),(5,120)]
 
 -- Solution:
 
-fa'' :: Array Int Int
-fa'' = listArray (0,5) (1:[i*fa''!(i-1) | i <-[1..5]])
+fa'' :: Int -> Array Int Int
+fa'' n = fa where fa = listArray (0,n) (1:[i*fa!(i-1) | i <-[1..n]])
 
--- >>> fa''
--- array (0,5) [(0,1),(1,1),(2,2),(3,6),(4,24),(5,120)]
+-- >>> fa'' 6
+-- array (0,6) [(0,1),(1,1),(2,2),(3,6),(4,24),(5,120),(6,720)]
 
 -- Exercise 3.15
 
