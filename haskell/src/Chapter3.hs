@@ -288,8 +288,8 @@ fa'' n = fa where fa = listArray (0,n) (1:[i*fa!(i-1) | i <-[1..n]])
 
 -- Exercise 3.15
 
-accumArray' :: (Enum i, Ix i) => (e -> v -> e) -> e -> (i,i) -> [(i,v)] -> Array i e
-accumArray' f e (l,r) = accum f (array (l,r) (zip [l..r] (repeat e)))
+accumArray' :: Ix i => (e -> v -> e) -> e -> (i,i) -> [(i,v)] -> Array i e
+accumArray' f e (l,r) = accum f $ array (l,r) [(i,e) | i <- range (l,r)]
 
 -- >>> accumArray (+) 0 (1,3) [(1,20), (2,30), (1,40), (2,50)]
 -- array (1,3) [(1,60),(2,80),(3,0)]
