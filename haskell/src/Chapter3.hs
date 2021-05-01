@@ -21,6 +21,7 @@ module Chapter3
     ) where
 
 import Chapter1 (single)
+import Data.Array
 import Data.List (drop, uncons)
 
 -- SYMMETRIC LISTS
@@ -218,19 +219,21 @@ toRA = foldr consRA []
 -- Exercise 3.11
 
 updateRA :: Int -> a -> RAList a -> RAList a
-updateRA k x (Zero : ts) = updateRA k x ts
+updateRA k x (Zero : ts) = Zero : updateRA k x ts
 updateRA k x (One t : ts) = if k < size t
                             then One (updateT k x t) : ts
                             else One t : updateRA (k - size t) x ts
 
 updateT :: Int -> a -> Tree a -> Tree a
 updateT 0 x (Leaf _) = Leaf x
-updateT k x (Node s t1 t2) = if k < size t1
-                             then Node s (updateT k x t1) t2
-                             else Node s t1 (updateT (k - size t1) x t2)
+updateT k x (Node n t1 t2) = if k < m
+                             then Node n (updateT k x t1) t2
+                             else Node n t1 (updateT (k - size t1) x t2)
+                             where m = n `div` 2
 
--- >>> updateRA 1 (-1) (toRA [1,2,3,4,5])
--- [One (Leaf 1),One (Node 4 (Node 2 (Leaf (-1)) (Leaf 3)) (Node 2 (Leaf 4) (Leaf 5)))]
+-- >>> updateRA 1 (-1) (toRA [1,2,3,4,5,6])
+-- [Zero,One (Node 2 (Leaf 1) (Leaf (-1))),One (Node 4 (Node 2 (Leaf 3) (Leaf 4)) (Node 2 (Leaf 5) (Leaf 6)))]
+--
 
 -- Exercise 3.12
 
@@ -248,3 +251,46 @@ headRA = fst . unconsRA
 tailRA :: RAList a -> RAList a
 tailRA = snd . unconsRA
 
+-- ARRAYS
+
+sort :: Int -> [Int] -> [Int]
+sort m xs = concatMap copy (assocs a)
+            where a = accumArray (+) 0 (0,m) (zip xs (repeat 1))
+                  copy (x,k) = replicate k x
+
+-- >>> sort 5 [3, 1, 4, 5, 2]
+-- [1,2,3,4,5]
+
+-- Exercise π
+
+fa :: Int -> Array Int Int
+fa n = listArray (0,n) (scanl (*) 1 [1..n])
+
+-- >>> fa 5
+-- array (0,5) [(0,1),(1,1),(2,2),(3,6),(4,24),(5,120)]
+
+fa' :: Int -> Array Int Int
+fa' n = foldl update (array (0,n) [(0,1)]) [1..n]
+        where update ax i = ax Data.Array.// [(i,i * ax!(i-1))] 
+
+-- >>> fa' 5
+-- array (0,5) [(0,1),(1,1),(2,2),(3,6),(4,24),(5,120)]
+
+-- Solution:
+
+fa'' :: Array Int Int
+fa'' = listArray (0,5) (1:[i*fa''!(i-1) | i <-[1..5]])
+
+-- >>> fa''
+-- array (0,5) [(0,1),(1,1),(2,2),(3,6),(4,24),(5,120)]
+
+-- Exercise 3.15
+
+accumArray' :: (Enum i, Ix i) => (e -> v -> e) -> e -> (i,i) -> [(i,v)] -> Array i e
+accumArray' f e (l,r) = accum f (array (l,r) (zip [l..r] (repeat e)))
+
+-- >>> accumArray (+) 0 (1,3) [(1,20), (2,30), (1,40), (2,50)]
+-- array (1,3) [(1,60),(2,80),(3,0)]
+
+-- >>> accumArray' (+) 0 (1,3) [(1,20), (2,30), (1,40), (2,50)]
+-- array (1,3) [(1,60),(2,80),(3,0)]
