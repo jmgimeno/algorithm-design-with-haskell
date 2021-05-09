@@ -27,6 +27,7 @@ library
   exposed-modules:
       Chapter1
       Chapter3
+      Chapter4
       Lib
   other-modules:
       Paths_adwh
