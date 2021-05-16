@@ -207,3 +207,15 @@ gbalance t1 x t2
   where
     h1 = height t1
     h2 = height t2
+
+flatten :: Tree a -> [a]
+flatten = go []
+  where
+    go acc Null = acc
+    go acc (Node _ l x r) = go (x : go acc r) l
+
+sort :: (Ord a) => [a] -> [a]
+sort = flatten . mktree
+
+-- >>> sort [3,2,5,1,4]
+-- [1,2,3,4,5]
