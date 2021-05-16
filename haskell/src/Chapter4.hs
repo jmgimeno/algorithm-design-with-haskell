@@ -1,6 +1,6 @@
 module Chapter4 where
 
-type Nat = Integer -- to avoid precission errors
+type Nat = Int -- to avoid precission errors use Integer
 
 -- ONE-DIMENSIONAL SEARCH PROBLEM
 
@@ -104,3 +104,106 @@ search2D' f t = from (0, p) (q, 0)
 
 -- >>> search2D (\(x, y) -> x^2 + 3^y) 20259
 -- [(24,9)]
+
+-- BINARY SEARCH-TREES
+
+-- Unbalanced
+data Tree' a = Null' | Node' (Tree' a) a (Tree' a)
+
+size' :: Tree' a -> Nat
+size' Null' = 0
+size' (Node' l _ r) = 1 + size' l + size' r
+
+flatten' :: Tree' a -> [a]
+flatten' Null' = []
+flatten' (Node' l x r) = flatten' l ++ [x] ++ flatten' r
+
+search' :: Ord k => (a -> k) -> k -> Tree' a -> Maybe a
+search' key k Null' = Nothing
+search' key k (Node' l x r)
+  | key x < k = search' key k r
+  | key x == k = Just x
+  | key x > k = search' key k l
+
+height' :: Tree' a -> Nat
+height' Null' = 0
+height' (Node' l _ r) = 1 + max (height' l) (height' r)
+
+mktree' :: Ord a => [a] -> Tree' a
+mktree' [] = Null'
+mktree' (x : xs) = Node' (mktree' ys) x (mktree' zs)
+  where
+    (ys, zs) = partition (< x) xs
+    partition p xs = (filter p xs, filter (not . p) xs)
+
+-- Balanced
+data Tree a = Null | Node Nat (Tree a) a (Tree a) deriving (Show)
+
+height :: Tree a -> Nat
+height Null = 0
+height (Node h _ _ _) = h
+
+node :: Tree a -> a -> Tree a -> Tree a
+node l x r = Node h l x r where h = 1 + max (height l) (height r)
+
+mktree :: Ord a => [a] -> Tree a
+mktree = foldr insert Null
+
+insert :: Ord a => a -> Tree a -> Tree a
+insert x Null = node Null x Null
+insert x (Node h l y r)
+  | x < y = balance (insert x l) y r
+  | x == y = Node h l y r
+  | y < x = balance l y (insert x r)
+
+bias :: Tree a -> Int
+bias (Node _ l x r) = height l - height r
+
+balance :: Tree a -> a -> Tree a -> Tree a
+balance t1 x t2
+  | abs (h1 - h2) <= 1 = node t1 x t2
+  | h1 == h2 + 2 = rotateR t1 x t2
+  | h2 == h1 + 2 = rotateL t1 x t2
+  where
+    h1 = height t1
+    h2 = height t2
+
+rotr :: Tree a -> Tree a
+rotr (Node _ (Node _ ll y rl) x r) = node ll y (node rl x r)
+
+rotl :: Tree a -> Tree a
+rotl (Node _ ll y (Node _ lrl z rrl)) = node (node ll y lrl) z rrl
+
+rotateR :: Tree a -> a -> Tree a -> Tree a
+rotateR t1 x t2 =
+  if 0 <= bias t1
+    then rotr (node t1 x t2)
+    else rotr (node (rotl t1) x t2)
+
+rotateL :: Tree a -> a -> Tree a -> Tree a
+rotateL t1 x t2 =
+  if bias t2 <= 0
+    then rotl (node t1 x t2)
+    else rotl (node t1 x (rotr t2))
+
+balanceR :: Tree a -> a -> Tree a -> Tree a
+balanceR (Node _ l y r) x t2 =
+  if height r >= height t2 + 2
+    then balance l y (balanceR r x t2)
+    else balance l y (node r x t2)
+
+-- Exercise 4.16
+balanceL :: Tree a -> a -> Tree a -> Tree a
+balanceL t1 x (Node _ l y r) =
+  if height l >= height t1 + 2
+    then balance (balanceL t1 x l) y r
+    else balance (node t1 x l) y r
+
+gbalance :: Tree a -> a -> Tree a -> Tree a
+gbalance t1 x t2
+  | abs (h1 - h2) <= 2 = balance t1 x t2
+  | h1 > h2 + 2 = balanceR t1 x t2
+  | h1 + 2 < h2 = balanceL t1 x t2
+  where
+    h1 = height t1
+    h2 = height t2
